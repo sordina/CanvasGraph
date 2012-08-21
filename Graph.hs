@@ -47,6 +47,9 @@ functionData cs = map (id &&& poly cs) [0..]
 poly :: [Float] -> Float -> Float
 poly cs x = sum $ zipWith (*) cs $ map (x**) [0..]
 
+colors :: [String]
+colors = words "#CC3300 #CC9900 #99CC00 #33CC00 #00CC33 #00CC99 #0099CC #0033CC #470AFF #7547FF #C2FF0A"
+
 main :: IO ()
 main = do points <- fmap (take 18) $ annealedData 10 [0,8,-3,1,0,-0.1]
 
@@ -57,11 +60,27 @@ main = do points <- fmap (take 18) $ annealedData 10 [0,8,-3,1,0,-0.1]
             let adjuster = adjust screenSize (concat $ points : fits)
                 fits     = flip map [2..8] $ \x -> map (id &&& poly (lsrf x points)) (map fst points)
 
-            flip mapM_ fits $ \fit -> do
+            flip mapM_ (zip colors fits) $ \(color, fit) -> do
               send context $ do
-                strokeStyle "#EE6666"
+                strokeStyle color
                 sketch adjuster fit
                 lineWidth 4
                 stroke
 
             flip mapM_ points $ send context . dot adjuster
+
+            send context $ do
+              save ()
+              translate (-30, 100)
+              font "40pt arial"
+              fillText("CanvasGraph", 150, 100)
+
+              translate (10, 70)
+              font "30pt times"
+              fillText("Simple, Cross-Platform Graphing", 150, 100)
+
+              translate (0, 70)
+              font "30pt times"
+              fillText("From Haskell -> To Your Browser", 150, 100)
+
+              restore ()
