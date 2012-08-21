@@ -1,11 +1,9 @@
-CanvasGraph
-===========
-
-Combines Graphing and Blank-Canvas for a portable way to get some graphics on screen.
-
-<img style="border: 1px solid black; width: 50%;" src="https://raw.github.com/sordina/CanvasGraph/master/images/title.png" alt="Example Graph" />
+<img src="https://raw.github.com/sordina/CanvasGraph/master/images/title.png" alt="Example Graph" />
 
 ## Includes the following functionality...
 
-* Least-Squares Regression Polynomials
+* Least-Squares Regression Arbitrary Order Polynomial Fits
 * Automatic scaling - With Zoom Functionality
+* Text
+* Axes
+* Interaction
