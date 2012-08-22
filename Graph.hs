@@ -52,15 +52,19 @@ colors :: [String]
 colors = cycle $ words "#CC3300 #CC9900 #99CC00 #33CC00 #00CC33 #00CC99 #0099CC #0033CC #470AFF #7547FF #C2FF0A"
 
 main :: IO ()
-main = do points <- fmap (take 18) $ annealedData 5000 [0,8,-3,1,0,-0.1]
+main = blankCanvas 5001 $ draw
 
-          blankCanvas 5001 $ \ context -> do
+draw :: Context -> IO ()
+draw context =
+         do points <- fmap (take 18) $ annealedData 5000 [0,8,-3,1,0,-0.1]
 
-            screenSize@(x,y) <- send context size
+            screenSize@(w,_) <- send context size
 
             let adjuster = adjust screenSize (concat $ points : fits)
                 cs       = flip map [2..8] $ \x -> lsrf x points
                 fits     = map (\c -> map (id &&& poly c) (map fst points)) cs
+
+            -- send context $ clearRect (0,0,w,h)
 
             flip mapM_ (take 3 $ zip4 [0..] cs colors fits) $ \(i, c, color, fit) -> do
               send context $ do
@@ -72,7 +76,7 @@ main = do points <- fmap (take 18) $ annealedData 5000 [0,8,-3,1,0,-0.1]
                 save ()
                 fillStyle color
                 font "15pt arial"
-                fillText(show c, x - 450, 50 + 30 * i)
+                fillText(show c, w - 450, 50 + 30 * i)
                 restore ()
 
             flip mapM_ points $ send context . dot adjuster
