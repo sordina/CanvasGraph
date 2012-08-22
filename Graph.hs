@@ -5,6 +5,7 @@ import Control.Arrow hiding (loop)
 import System.Random
 import GHC.Float
 import LinReg
+import Data.List
 
 lsrf :: Int -> [(Float,Float)] -> [Float]
 lsrf o l = map double2Float $ lsr o (map (float2Double *** float2Double) l)
@@ -48,24 +49,31 @@ poly :: [Float] -> Float -> Float
 poly cs x = sum $ zipWith (*) cs $ map (x**) [0..]
 
 colors :: [String]
-colors = words "#CC3300 #CC9900 #99CC00 #33CC00 #00CC33 #00CC99 #0099CC #0033CC #470AFF #7547FF #C2FF0A"
+colors = cycle $ words "#CC3300 #CC9900 #99CC00 #33CC00 #00CC33 #00CC99 #0099CC #0033CC #470AFF #7547FF #C2FF0A"
 
 main :: IO ()
-main = do points <- fmap (take 18) $ annealedData 10 [0,8,-3,1,0,-0.1]
+main = do points <- fmap (take 18) $ annealedData 5000 [0,8,-3,1,0,-0.1]
 
           blankCanvas 5001 $ \ context -> do
 
-            screenSize <- send context size
+            screenSize@(x,y) <- send context size
 
             let adjuster = adjust screenSize (concat $ points : fits)
-                fits     = flip map [2..8] $ \x -> map (id &&& poly (lsrf x points)) (map fst points)
+                cs       = flip map [2..8] $ \x -> lsrf x points
+                fits     = map (\c -> map (id &&& poly c) (map fst points)) cs
 
-            flip mapM_ (zip colors fits) $ \(color, fit) -> do
+            flip mapM_ (take 3 $ zip4 [0..] cs colors fits) $ \(i, c, color, fit) -> do
               send context $ do
                 strokeStyle color
                 sketch adjuster fit
                 lineWidth 4
                 stroke
+
+                save ()
+                fillStyle color
+                font "15pt arial"
+                fillText(show c, x - 450, 50 + 30 * i)
+                restore ()
 
             flip mapM_ points $ send context . dot adjuster
 
