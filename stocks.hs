@@ -24,7 +24,7 @@ order :: Int
 order = 7
 
 companies :: String
-companies = "DTL IIN TPM SGT"
+companies = "DTL NGX IIN TPM SGT"
 
 urls :: [(String,String)]
 urls = flip map (words companies) $ \w -> (stockURL (w ++ ".AX") 2006 2013)
@@ -60,7 +60,7 @@ main = do
   plot (map fst urls) $ map (V.toList . snd) $ rights $ map decodeByName csvDatas
 
 point :: PricePoint -> (Float,Float)
-point (PP d p) = (fromIntegral $ toModifiedJulianDay d - 2011, p)
+point (PP d p) = (fromIntegral $ toModifiedJulianDay d, p)
 
 plot :: [String] -> [[PricePoint]] -> IO ()
 plot names items = blankCanvas 5001 (draw names items)
@@ -70,19 +70,6 @@ lsrf o l = map double2Float $ lsr o (map (float2Double *** float2Double) l)
 
 sketch :: ((Float,Float) -> (Float,Float)) -> [(Float,Float)] -> Canvas ()
 sketch f l = beginPath () >> moveTo (f $ head l) >> mapM_ (lineTo . f) l
-
-{-
-dot :: String -> ((Float,Float) -> (Float,Float)) -> (Float,Float) -> Canvas ()
-dot c f p = do
-  save ()
-  beginPath ()
-  translate (f p)
-  arc (0, 0, 2, 0, 2 * pi, False)
-  strokeStyle c
-  lineWidth 2
-  stroke
-  restore ()
--}
 
 adjust :: (Float, Float) -> [(Float, Float)] -> (Float, Float) -> (Float, Float)
 adjust (w,h) l = f
