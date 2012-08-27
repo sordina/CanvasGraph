@@ -24,10 +24,11 @@ order :: Int
 order = 7
 
 companies :: String
-companies = "DTL NGX IIN TPM SGT"
+-- companies = "DTL NGX IIN TPM SGT"
+companies = "IIN BHP"
 
 urls :: [(String,String)]
-urls = flip map (words companies) $ \w -> (stockURL (w ++ ".AX") 2006 2013)
+urls = flip map (words companies) $ \w -> (stockURL (w ++ ".AX") 2006 2012)
 
 stockURL :: String -> Int -> Int -> (String,String)
 stockURL s f t = (s,url)
