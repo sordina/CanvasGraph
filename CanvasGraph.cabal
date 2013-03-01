@@ -15,4 +15,4 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Graph
-  build-depends:       base, blank-canvas >=0.2.*, random, LynReg >=0.1.*
+  build-depends:       base, blank-canvas >=0.2, random, LynReg >=0.1
