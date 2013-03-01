@@ -21,7 +21,7 @@ dot f p = do
   arc (0, 0, 8, 0, 2 * pi, False)
   strokeStyle "#2222DD"
   lineWidth 4
-  stroke
+  stroke ()
   restore ()
 
 adjust :: (Float, Float) -> [(Float, Float)] -> (Float, Float) -> (Float, Float)
@@ -71,7 +71,7 @@ draw context =
                 strokeStyle color
                 sketch adjuster fit
                 lineWidth 4
-                stroke
+                stroke ()
 
                 save ()
                 fillStyle color
