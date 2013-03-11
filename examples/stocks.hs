@@ -13,6 +13,7 @@ import Data.Time.Calendar
 import Data.Either
 import Data.List
 import Data.Hash.MD5
+import Network
 
 import qualified System.Directory           as SD
 import qualified Data.ByteString.Char8      as DBC
@@ -24,15 +25,15 @@ order :: Int
 order = 7
 
 companies :: String
--- companies = "DTL NGX IIN TPM SGT"
-companies = "IIN BHP"
+companies = "DTL NGX IIN TPM SGT"
+-- companies = "IIN"
 
 urls :: [(String,String)]
 urls = flip map (words companies) $ \w -> (stockURL (w ++ ".AX") 2006 2012)
 
 stockURL :: String -> Int -> Int -> (String,String)
 stockURL s f t = (s,url)
-  where url = "http://ichart.finance.yahoo.com/table.csv?s=" ++ s ++ "&d=6&e=12&f=" ++ show t ++ "&g=d&a=0&b=1&c=" ++ show f ++ "&ignore=.csv"
+  where url = "http://ichart.yahoo.com/table.csv?s=" ++ s
 
 data PricePoint = PP Day Float deriving Show
 
@@ -43,14 +44,15 @@ instance FromField Day where
       res = parseTime defaultTimeLocale "%Y-%m-%d" str
 
 instance FromNamedRecord PricePoint where
-  parseNamedRecord r = PP <$> r .: "Date" <*> r .: "Adj Close" -- Date,Open,High,Low,Close,Volume,Adj Close
+  parseNamedRecord r = PP <$> r .: "Date" <*> r .: "Adj Close" -- Date, Open, High, Low, Close, Volume, Adj Close
 
 httpCache :: String -> IO DBL.ByteString
 httpCache url = do
   let filepath = "/tmp/asx" ++ md5s (Str url)
   fe <- SD.doesFileExist filepath
   if fe then DBL.readFile filepath
-        else do csv <- simpleHttp url
+        else do putStrLn $ "Caching " ++ url
+                csv <- simpleHttp url
                 DBL.writeFile filepath csv
                 return csv
 
@@ -119,13 +121,13 @@ draw names mitems context =
           strokeStyle c
           sketch adjuster f
           lineWidth 7
-          stroke
+          stroke ()
 
        send context $ do
           strokeStyle c
           sketch adjuster p
           lineWidth 1
-          stroke
+          stroke ()
 
      flip mapM_ (zip3 [1..] names colors) $ \(ind,name,c) -> do
 
