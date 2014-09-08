@@ -14,6 +14,8 @@ import Data.Either
 import Data.List
 import Data.Hash.MD5
 import Network
+import Data.Text (pack,unpack)
+
 
 import qualified System.Directory           as SD
 import qualified Data.ByteString.Char8      as DBC
@@ -26,7 +28,7 @@ order = 7
 
 companies :: String
 companies = "DTL NGX IIN TPM SGT"
--- companies = "IIN"
+--- companies = "IIN"
 
 urls :: [(String,String)]
 urls = flip map (words companies) $ \w -> (stockURL (w ++ ".AX") 2006 2012)
@@ -59,14 +61,13 @@ httpCache url = do
 main :: IO ()
 main = do
   csvDatas <- mapM (httpCache . snd) urls
-
   plot (map fst urls) $ map (V.toList . snd) $ rights $ map decodeByName csvDatas
 
 point :: PricePoint -> (Float,Float)
 point (PP d p) = (fromIntegral $ toModifiedJulianDay d, p)
 
 plot :: [String] -> [[PricePoint]] -> IO ()
-plot names items = blankCanvas 5001 (draw names items)
+plot names items = blankCanvas 5001 (draw (map pack names) items)
 
 lsrf :: Int -> [(Float,Float)] -> [Float]
 lsrf o l = map double2Float $ lsr o (map (float2Double *** float2Double) l)
@@ -103,9 +104,9 @@ constraints items = map (id &&& fun) (map fst points)
         fun    = poly consts
         consts = lsrf order points
 
-draw :: [String] -> [[PricePoint]] -> Context -> IO ()
+--draw :: [String] -> [[PricePoint]] -> Context -> IO ()
 draw names mitems context =
-  do screenSize@(wwid,whei) <- send context size
+  do let screenSize@(wwid,whei) = (width context,height context)
 
      let adjusts  = map (adjust screenSize) (zipWith (++) points fitted)
          points   = map (map point) mitems
@@ -118,13 +119,13 @@ draw names mitems context =
      flip mapM_ (zip4 adjusts fitted points colors) $ \(adjuster,f,p,c) -> do
 
        send context $ do
-          strokeStyle c
+          strokeStyle (pack c)
           sketch adjuster f
           lineWidth 7
           stroke ()
 
        send context $ do
-          strokeStyle c
+          strokeStyle (pack c)
           sketch adjuster p
           lineWidth 1
           stroke ()
@@ -134,10 +135,10 @@ draw names mitems context =
        send context $ do
 
          save ()
-         fillStyle "#000000"
+         fillStyle (pack "#000000")
          fillRect (25, 25 + 60 * ind, 180, 50)
 
-         fillStyle c
+         fillStyle (pack c)
          fillRect (30, 30 + 60 * ind, 40, 40)
          font "20pt arial"
          fillText(name, 80, 62 + 60 * ind)

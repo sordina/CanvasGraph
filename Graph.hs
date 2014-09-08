@@ -1,5 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Graph where
 
+import Data.Text (pack,unpack)
 import Graphics.Blank
 import Control.Arrow hiding (loop)
 import System.Random
@@ -54,11 +56,10 @@ colors = cycle $ words "#CC3300 #CC9900 #99CC00 #33CC00 #00CC33 #00CC99 #0099CC 
 main :: IO ()
 main = blankCanvas 5001 $ draw
 
-draw :: Context -> IO ()
+draw :: DeviceContext -> IO ()
 draw context =
          do points <- fmap (take 18) $ annealedData 5000 [0,8,-3,1,0,-0.1]
-
-            screenSize@(w,_) <- send context size
+            let screenSize@(w,_) = (width context,height context)
 
             let adjuster = adjust screenSize (concat $ points : fits)
                 cs       = flip map [2..8] $ \x -> lsrf x points
@@ -68,15 +69,15 @@ draw context =
 
             flip mapM_ (take 3 $ zip4 [0..] cs colors fits) $ \(i, c, color, fit) -> do
               send context $ do
-                strokeStyle color
+                strokeStyle (pack color)
                 sketch adjuster fit
                 lineWidth 4
                 stroke ()
 
                 save ()
-                fillStyle color
+                fillStyle (pack color)
                 font "15pt arial"
-                fillText(show c, w - 450, 50 + 30 * i)
+                fillText(pack(show c), w - 450, 50 + 30 * i)
                 restore ()
 
             flip mapM_ points $ send context . dot adjuster
